@@ -6,17 +6,35 @@ One shortcut to focus your Claude terminal -- or create, resume, and switch betw
 
 ## Features
 
-### Claude Tmux: Focus
+### Claude Tmux: Focus (`Cmd+Shift+0`)
 
-Focus the existing Claude Tmux terminal tab. If no tab exists, attaches to the current tmux session. If no tmux session is running, shows a resume picker of existing Claude Code sessions for the workspace. If no past sessions exist, prompts for a name and starts a fresh session with automatic `/rename`.
+Focus the existing Claude Tmux terminal tab. If no tab exists, attaches to the current tmux session. If no tmux session is running, shows a resume picker of existing Claude Code sessions. If no past sessions exist, prompts for a name and starts a fresh session.
 
-### Claude Tmux: Focus Window
+**No tab exists** -- creates and focuses the Claude Tmux tab:
+
+<video src="assets/Focus1.mp4" controls></video>
+
+**Tab exists but not focused** -- switches focus to the Claude Tmux tab:
+
+<video src="assets/Focus2.mp4" controls></video>
+
+### Claude Tmux: Focus Window (`Cmd+Shift+9`)
 
 Shows a dropdown of running tmux windows (with pane titles) and switches to the selected window.
 
-### Claude Tmux: Create Window
+<video src="assets/FocusWindow1.mp4" controls></video>
 
-Shows a dropdown with "New Claude Code Session" at the top, followed by existing Claude Code sessions. Selecting "New" prompts for a session name and starts a fresh `claude --ide` instance with automatic `/rename`. Selecting an existing session resumes it in a new tmux window.
+### Claude Tmux: Create Window (`Cmd+Shift+8`)
+
+Shows a dropdown with "New Claude Code Session" at the top, followed by existing Claude Code sessions. Selecting "New" prompts for a session name and starts a fresh `claude --ide` instance. Selecting an existing session resumes it in a new tmux window.
+
+**New session:**
+
+<video src="assets/Create1-newCCsession.mp4" controls></video>
+
+**Resume existing session:**
+
+<video src="assets/Create2-resumeCCsession.mp4" controls></video>
 
 ## How It Works
 
