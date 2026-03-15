@@ -1,0 +1,65 @@
+{
+  "name": "claude-tmux-focus",
+  "displayName": "Claude Tmux Focus",
+  "publisher": "songusb-leo-lee",
+  "description": "Open Claude Code in a tmux session in the editor area with a single shortcut",
+  "version": "1.0.4",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Fitree/vscode-claude-tmux"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "claude",
+    "tmux",
+    "terminal",
+    "ai",
+    "claude-code"
+  ],
+  "activationEvents": [
+    "onCommand:claude-tmux-focus.open",
+    "onCommand:claude-tmux-focus.focusWindow",
+    "onCommand:claude-tmux-focus.createWindow"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claude-tmux-focus.open",
+        "title": "Claude Tmux: Focus"
+      },
+      {
+        "command": "claude-tmux-focus.focusWindow",
+        "title": "Claude Tmux: Focus Window"
+      },
+      {
+        "command": "claude-tmux-focus.createWindow",
+        "title": "Claude Tmux: Create Window"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "claude-tmux-focus.open",
+        "key": "ctrl+shift+0",
+        "mac": "cmd+shift+0"
+      },
+      {
+        "command": "claude-tmux-focus.focusWindow",
+        "key": "ctrl+shift+9",
+        "mac": "cmd+shift+9"
+      },
+      {
+        "command": "claude-tmux-focus.createWindow",
+        "key": "ctrl+shift+8",
+        "mac": "cmd+shift+8"
+      }
+    ]
+  }
+}
