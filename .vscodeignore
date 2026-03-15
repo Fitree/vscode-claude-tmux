@@ -2,3 +2,5 @@
 .gitignore
 .vscodeignore
 CHANGELOG.md
+assets/*.mov
+*.vsix

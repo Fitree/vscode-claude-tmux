@@ -1,7 +1,7 @@
 {
   "name": "claude-tmux-focus",
   "displayName": "Claude Tmux Focus",
-  "publisher": "songusb-leo-lee",
+  "publisher": "songsub-leo-lee",
   "description": "Open Claude Code in a tmux session in the editor area with a single shortcut",
   "version": "1.0.4",
   "license": "MIT",
