@@ -1,5 +1,7 @@
 # Claude Tmux Focus
 
+**No matter where your cursor is, one shortcut takes you straight to your Claude Code window.**
+
 Manage Claude Code sessions inside tmux, directly in the VS Code editor area.
 
 One shortcut to focus your Claude terminal -- or create, resume, and switch between sessions without leaving the editor.
