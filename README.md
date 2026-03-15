@@ -12,17 +12,17 @@ Focus the existing Claude Tmux terminal tab. If no tab exists, attaches to the c
 
 **No tab exists** -- creates and focuses the Claude Tmux tab:
 
-<video src="assets/Focus1.mp4" controls></video>
+![Focus - no tab](assets/Focus1.gif)
 
 **Tab exists but not focused** -- switches focus to the Claude Tmux tab:
 
-<video src="assets/Focus2.mp4" controls></video>
+![Focus - tab exists](assets/Focus2.gif)
 
 ### Claude Tmux: Focus Window (`Cmd+Shift+9`)
 
 Shows a dropdown of running tmux windows (with pane titles) and switches to the selected window.
 
-<video src="assets/FocusWindow1.mp4" controls></video>
+![Focus Window](assets/FocusWindow1.gif)
 
 ### Claude Tmux: Create Window (`Cmd+Shift+8`)
 
@@ -30,11 +30,11 @@ Shows a dropdown with "New Claude Code Session" at the top, followed by existing
 
 **New session:**
 
-<video src="assets/Create1-newCCsession.mp4" controls></video>
+![Create - new session](assets/Create1-newCCsession.gif)
 
 **Resume existing session:**
 
-<video src="assets/Create2-resumeCCsession.mp4" controls></video>
+![Create - resume session](assets/Create2-resumeCCsession.gif)
 
 ## How It Works
 
