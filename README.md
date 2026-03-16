@@ -8,7 +8,7 @@ One shortcut to focus your Claude terminal -- or create, resume, and switch betw
 
 ## Features
 
-### Claude Tmux: Focus (`Cmd+Shift+0`)
+### Claude Tmux: Focus (`Cmd+Shift+I`)
 
 Focus the existing Claude Tmux terminal tab. If no tab exists, attaches to the current tmux session. If no tmux session is running, shows a resume picker of existing Claude Code sessions. If no past sessions exist, prompts for a name and starts a fresh session.
 
@@ -20,23 +20,31 @@ Focus the existing Claude Tmux terminal tab. If no tab exists, attaches to the c
 
 ![Focus - tab exists](assets/Focus2.gif)
 
-### Claude Tmux: Focus Window (`Cmd+Shift+9`)
+### Claude Tmux: Focus on Previous / Next Session (`Cmd+Shift+,` / `Cmd+Shift+.`)
+
+Cycle through tmux windows within the current workspace session. Wraps around at both ends.
+
+### Claude Tmux: Focus Window
 
 Shows a dropdown of running tmux windows (with pane titles) and switches to the selected window.
 
 ![Focus Window](assets/FocusWindow1.gif)
 
-### Claude Tmux: Create Window (`Cmd+Shift+8`)
+### Claude Tmux: Create New
 
-Shows a dropdown with "New Claude Code Session" at the top, followed by existing Claude Code sessions. Selecting "New" prompts for a session name and starts a fresh `claude --ide` instance. Selecting an existing session resumes it in a new tmux window.
-
-**New session:**
+Prompts for a session name and starts a fresh `claude --ide` instance in a new tmux window.
 
 ![Create - new session](assets/Create1-newCCsession.gif)
 
-**Resume existing session:**
+### Claude Tmux: Connect Claude Code Session
 
-![Create - resume session](assets/Create2-resumeCCsession.gif)
+Browse existing Claude Code sessions and resume one in a new tmux window. If the selected session is already running, focuses the existing window instead.
+
+![Connect - resume session](assets/Create2-resumeCCsession.gif)
+
+### Claude Tmux: Remove
+
+Multi-select tmux windows to remove from the session.
 
 ## How It Works
 
@@ -51,15 +59,15 @@ Shows a dropdown with "New Claude Code Session" at the top, followed by existing
 
 ## Installation
 
-Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=songusb-leo-lee.claude-tmux-focus) or search "Claude Tmux Focus" in the Extensions view.
+Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=songsub-leo-lee.claude-tmux-focus) or search "Claude Tmux Focus" in the Extensions view.
 
 ## Keybindings
 
 | Command | Default (Mac) | Default (Win/Linux) |
 |---------|--------------|-------------------|
-| Claude Tmux: Focus | `Cmd+Shift+0` | `Ctrl+Shift+0` |
-| Claude Tmux: Focus Window | `Cmd+Shift+9` | `Ctrl+Shift+9` |
-| Claude Tmux: Create Window | `Cmd+Shift+8` | `Ctrl+Shift+8` |
+| Claude Tmux: Focus | `Cmd+Shift+I` | `Ctrl+Shift+I` |
+| Claude Tmux: Focus on Previous Session | `Cmd+Shift+,` | `Ctrl+Shift+,` |
+| Claude Tmux: Focus on Next Session | `Cmd+Shift+.` | `Ctrl+Shift+.` |
 
 All keybindings can be customized via `Preferences: Open Keyboard Shortcuts`.
 
