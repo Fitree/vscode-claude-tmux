@@ -331,15 +331,15 @@ function activate(context) {
     }
   });
 
-  // Claude Tmux: Create Window — "New Claude Code Session" + existing CC sessions dropdown
+  // Claude Tmux: Connect Claude Code Session — show existing CC sessions to resume
   const createWindowCmd = vscode.commands.registerCommand('claude-tmux-focus.createWindow', async () => {
     const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     const cwd = workspacePath || process.env.HOME;
     const session = getTmuxSession();
     const projectDir = getProjectDir(cwd);
 
-    // Build picker items: "New" at top + existing sessions
-    const items = [{ label: '$(add) New Claude Code Session', sessionId: null, alwaysShow: true }];
+    // Build picker items from existing sessions only
+    const items = [];
 
     if (workspacePath) {
       const sessions = await vscode.window.withProgress(
@@ -356,8 +356,13 @@ function activate(context) {
       }
     }
 
+    if (items.length === 0) {
+      vscode.window.showInformationMessage('No existing Claude sessions found.');
+      return;
+    }
+
     const picked = await vscode.window.showQuickPick(items, {
-      placeHolder: 'Create a new window or resume an existing session',
+      placeHolder: 'Select a Claude session to resume',
       matchOnDescription: true,
       matchOnDetail: true,
     });
@@ -366,64 +371,160 @@ function activate(context) {
 
     const { terminal, isNew } = getOrCreateTerminal();
 
-    if (picked.sessionId) {
-      // Resume existing session — check if already running in a tmux window
-      const windowIndex = await findTmuxWindow(picked.sessionId);
-      if (windowIndex !== null) {
-        if (isNew) {
-          terminal.sendText(`tmux attach -t "${session}" \\; select-window -t "${session}:${windowIndex}"`);
-        } else {
-          cp.exec(`tmux select-window -t "${session}:${windowIndex}"`);
-        }
-        return;
-      }
-
-      // Open in new tmux window
+    // Resume existing session — check if already running in a tmux window
+    const windowIndex = await findTmuxWindow(picked.sessionId);
+    if (windowIndex !== null) {
       if (isNew) {
-        terminal.sendText(
-          `tmux has-session -t "${session}" 2>/dev/null && tmux attach -t "${session}" \\; new-window -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter || tmux new-session -s "${session}" -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter`
-        );
+        terminal.sendText(`tmux attach -t "${session}" \\; select-window -t "${session}:${windowIndex}"`);
       } else {
-        const exists = await tmuxSessionExists();
-        if (exists) {
-          cp.exec(`tmux new-window -t "${session}" -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter`);
-        } else {
-          terminal.sendText(`tmux new-session -s "${session}" -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter`);
-        }
+        cp.exec(`tmux select-window -t "${session}:${windowIndex}"`);
       }
+      return;
+    }
+
+    // Open in new tmux window
+    if (isNew) {
+      terminal.sendText(
+        `tmux has-session -t "${session}" 2>/dev/null && tmux attach -t "${session}" \\; new-window -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter || tmux new-session -s "${session}" -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter`
+      );
     } else {
-      // New fresh session — ask for a name
-      const sessionName = await vscode.window.showInputBox({
-        prompt: 'Enter a name for the new Claude session',
-        placeHolder: 'e.g., feature-auth, debug-api',
-      });
-
-      if (!sessionName) return;
-
-      if (!fs.existsSync(projectDir)) {
-        fs.mkdirSync(projectDir, { recursive: true });
-      }
-      const tmpName = `_new_${Date.now()}`;
-      const escaped = sessionName.replace(/'/g, "'\\''");
-      const claudeCmd = `claude --ide '/rename ${escaped}'`;
-
-      if (isNew) {
-        terminal.sendText(
-          `tmux has-session -t "${session}" 2>/dev/null && tmux attach -t "${session}" \\; new-window -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter || tmux new-session -s "${session}" -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter`
-        );
+      const exists = await tmuxSessionExists();
+      if (exists) {
+        cp.exec(`tmux new-window -t "${session}" -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter`);
       } else {
-        const exists = await tmuxSessionExists();
-        if (exists) {
-          cp.exec(`tmux new-window -t "${session}" -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter`);
-        } else {
-          terminal.sendText(`tmux new-session -s "${session}" -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter`);
-        }
+        terminal.sendText(`tmux new-session -s "${session}" -n "${picked.sessionId}" -c "${cwd}" \\; send-keys "claude --resume ${picked.sessionId} --ide" Enter`);
       }
-      waitAndRenameWindow(projectDir, session, tmpName);
     }
   });
 
-  context.subscriptions.push(focusCmd, focusWindowCmd, createWindowCmd);
+  // Claude Tmux: Create New — start a fresh Claude session with a name
+  const createNewCmd = vscode.commands.registerCommand('claude-tmux-focus.createNew', async () => {
+    const sessionName = await vscode.window.showInputBox({
+      prompt: 'Enter a name for the new Claude session',
+      placeHolder: 'e.g., feature-auth, debug-api',
+    });
+
+    if (!sessionName) return;
+
+    const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const cwd = workspacePath || process.env.HOME;
+    const session = getTmuxSession();
+    const projectDir = getProjectDir(cwd);
+
+    if (!fs.existsSync(projectDir)) {
+      fs.mkdirSync(projectDir, { recursive: true });
+    }
+
+    const { terminal, isNew } = getOrCreateTerminal();
+    const tmpName = `_new_${Date.now()}`;
+    const escaped = sessionName.replace(/'/g, "'\\''");
+    const claudeCmd = `claude --ide '/rename ${escaped}'`;
+
+    if (isNew) {
+      terminal.sendText(
+        `tmux has-session -t "${session}" 2>/dev/null && tmux attach -t "${session}" \\; new-window -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter || tmux new-session -s "${session}" -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter`
+      );
+    } else {
+      const exists = await tmuxSessionExists();
+      if (exists) {
+        cp.exec(`tmux new-window -t "${session}" -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter`);
+      } else {
+        terminal.sendText(`tmux new-session -s "${session}" -n "${tmpName}" -c "${cwd}" \\; send-keys "${claudeCmd}" Enter`);
+      }
+    }
+    waitAndRenameWindow(projectDir, session, tmpName);
+  });
+
+  // Claude Tmux: Remove — select and kill tmux windows
+  const removeCmd = vscode.commands.registerCommand('claude-tmux-focus.remove', async () => {
+    const session = getTmuxSession();
+    const sep = '|||';
+    const output = await exec(`tmux list-windows -t "${session}" -F "#{window_index}${sep}#{window_name}${sep}#{pane_title}" 2>/dev/null`);
+
+    if (!output) {
+      vscode.window.showInformationMessage('No tmux windows found for this workspace.');
+      return;
+    }
+
+    const windows = [];
+    for (const line of output.split('\n')) {
+      const first = line.indexOf(sep);
+      if (first === -1) continue;
+      const second = line.indexOf(sep, first + sep.length);
+      if (second === -1) continue;
+      windows.push({
+        index: line.substring(0, first),
+        name: line.substring(first + sep.length, second),
+        paneTitle: line.substring(second + sep.length),
+      });
+    }
+
+    if (windows.length === 0) return;
+
+    const items = windows.map(w => ({
+      label: `${w.index}: ${w.paneTitle}`,
+      description: w.name,
+      windowIndex: w.index,
+    }));
+
+    const picked = await vscode.window.showQuickPick(items, {
+      canPickMany: true,
+      placeHolder: 'Select tmux windows to remove',
+      matchOnDescription: true,
+    });
+
+    if (!picked || picked.length === 0) return;
+
+    // Kill in reverse index order so indices don't shift
+    const sorted = [...picked].sort((a, b) => parseInt(b.windowIndex) - parseInt(a.windowIndex));
+    for (const item of sorted) {
+      await exec(`tmux kill-window -t "${session}:${item.windowIndex}" 2>/dev/null`);
+    }
+
+    vscode.window.showInformationMessage(`Removed ${picked.length} tmux window(s).`);
+  });
+
+  // Claude Tmux: Prev/Next Session — cycle through tmux windows
+  async function cycleSession(direction) {
+    const session = getTmuxSession();
+    const sep = '|||';
+    const output = await exec(`tmux list-windows -t "${session}" -F "#{window_index}${sep}#{window_active}" 2>/dev/null`);
+
+    if (!output) return;
+
+    const windows = [];
+    let activeIdx = -1;
+    for (const line of output.split('\n')) {
+      const sepPos = line.indexOf(sep);
+      if (sepPos === -1) continue;
+      const index = parseInt(line.substring(0, sepPos));
+      const active = line.substring(sepPos + sep.length);
+      windows.push(index);
+      if (active === '1') activeIdx = windows.length - 1;
+    }
+
+    if (windows.length <= 1) return;
+
+    let targetPos;
+    if (direction === 'prev') {
+      targetPos = activeIdx <= 0 ? windows.length - 1 : activeIdx - 1;
+    } else {
+      targetPos = activeIdx >= windows.length - 1 ? 0 : activeIdx + 1;
+    }
+
+    const targetIndex = windows[targetPos];
+    const { terminal, isNew } = getOrCreateTerminal();
+    if (isNew) {
+      terminal.sendText(`tmux attach -t "${session}" \\; select-window -t "${session}:${targetIndex}"`);
+    } else {
+      cp.exec(`tmux select-window -t "${session}:${targetIndex}"`);
+    }
+  }
+
+  const prevSessionCmd = vscode.commands.registerCommand('claude-tmux-focus.prevSession', () => cycleSession('prev'));
+  const nextSessionCmd = vscode.commands.registerCommand('claude-tmux-focus.nextSession', () => cycleSession('next'));
+
+  context.subscriptions.push(focusCmd, focusWindowCmd, createWindowCmd, createNewCmd, removeCmd, prevSessionCmd, nextSessionCmd);
 }
 
 function deactivate() {}

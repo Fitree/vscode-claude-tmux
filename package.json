@@ -26,7 +26,11 @@
   "activationEvents": [
     "onCommand:claude-tmux-focus.open",
     "onCommand:claude-tmux-focus.focusWindow",
-    "onCommand:claude-tmux-focus.createWindow"
+    "onCommand:claude-tmux-focus.createWindow",
+    "onCommand:claude-tmux-focus.createNew",
+    "onCommand:claude-tmux-focus.remove",
+    "onCommand:claude-tmux-focus.prevSession",
+    "onCommand:claude-tmux-focus.nextSession"
   ],
   "main": "./extension.js",
   "contributes": {
@@ -41,24 +45,40 @@
       },
       {
         "command": "claude-tmux-focus.createWindow",
-        "title": "Claude Tmux: Create Window"
+        "title": "Claude Tmux: Connect Claude Code Session"
+      },
+      {
+        "command": "claude-tmux-focus.createNew",
+        "title": "Claude Tmux: Create New"
+      },
+      {
+        "command": "claude-tmux-focus.remove",
+        "title": "Claude Tmux: Remove"
+      },
+      {
+        "command": "claude-tmux-focus.prevSession",
+        "title": "Claude Tmux: Focus on Previous Session"
+      },
+      {
+        "command": "claude-tmux-focus.nextSession",
+        "title": "Claude Tmux: Focus on Next Session"
       }
     ],
     "keybindings": [
       {
         "command": "claude-tmux-focus.open",
-        "key": "ctrl+shift+0",
-        "mac": "cmd+shift+0"
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i"
       },
       {
-        "command": "claude-tmux-focus.focusWindow",
-        "key": "ctrl+shift+9",
-        "mac": "cmd+shift+9"
+        "command": "claude-tmux-focus.prevSession",
+        "key": "ctrl+shift+,",
+        "mac": "cmd+shift+,"
       },
       {
-        "command": "claude-tmux-focus.createWindow",
-        "key": "ctrl+shift+8",
-        "mac": "cmd+shift+8"
+        "command": "claude-tmux-focus.nextSession",
+        "key": "ctrl+shift+.",
+        "mac": "cmd+shift+."
       }
     ]
   }
