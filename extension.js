@@ -195,8 +195,15 @@ function getOrCreateTerminal() {
   for (const t of vscode.window.terminals) {
     if (t.name !== tabName) continue;
     if (hasVisibleTab(t)) {
-      t.show(false);
-      return { terminal: t, isNew: false };
+      // In remote/container environments, tab may still be listed but terminal disposed.
+      // Try to show it; if it throws, treat as zombie and continue.
+      try {
+        t.show(false);
+        return { terminal: t, isNew: false };
+      } catch {
+        try { t.dispose(); } catch {}
+        continue;
+      }
     }
     // Zombie — dispose it (ignore errors if already disposed)
     try { t.dispose(); } catch {}
@@ -364,9 +371,8 @@ function activate(context) {
 
     if (!picked) return;
 
-    const { terminal, isNew } = getOrCreateTerminal();
-
     if (picked.sessionId) {
+      const { terminal, isNew } = getOrCreateTerminal();
       // Resume existing session — check if already running in a tmux window
       const windowIndex = await findTmuxWindow(picked.sessionId);
       if (windowIndex !== null) {
@@ -392,13 +398,15 @@ function activate(context) {
         }
       }
     } else {
-      // New fresh session — ask for a name
+      // New fresh session — ask for a name BEFORE creating terminal (terminal steals focus)
       const sessionName = await vscode.window.showInputBox({
         prompt: 'Enter a name for the new Claude session',
         placeHolder: 'e.g., feature-auth, debug-api',
       });
 
       if (!sessionName) return;
+
+      const { terminal, isNew } = getOrCreateTerminal();
 
       if (!fs.existsSync(projectDir)) {
         fs.mkdirSync(projectDir, { recursive: true });
